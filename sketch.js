@@ -25,17 +25,24 @@ let inventory = {
 };
 
 // Costs
-let hiveUpgradeCost = 1000;
-let beeStormCost = 3000;
-let healthPotionCost = 2000;
-let turretCost = 6000;
+let hiveUpgradeCost = 5000;
+let beeStormCost = 8000;
+let healthPotionCost = 6000;
+let turretCost = 18000;
+let honeyMultiplierCost = 12000;
 
 // Hive upgrades
 let hiveLevel = 1;
+let honeyMultiplier = 1;
+let honeyMultiplierLevel = 0;
+let maxHoneyMultiplierLevel = 4;
 
 // Turret
 let turretCooldown = 1500;
 let lastTurretShot = 0;
+let healthPotionCount = 0;
+let lastPotionUse = 0;
+let potionCooldown = 10000;
 
 let beehive;
 let beeImage;
@@ -595,7 +602,7 @@ function drawShop() {
     panelX + 35,
     140,
     "Hive Upgrade",
-    "Increase max hive health by 20.",
+    "Increase max health by 20 (Max 200).",
     hiveUpgradeCost,
   );
 
@@ -618,9 +625,9 @@ function drawShop() {
   drawUpgradeCard(
     panelX + 35,
     530,
-    "Honey Turret",
-    "Permanent automatic defense.",
-    turretCost,
+    "Honey Multiplier",
+    "Increase honey earned by 25%.",
+    honeyMultiplierCost,
   );
 
   fill(165, 55, 55);
@@ -917,14 +924,6 @@ function drawHoneyUI() {
   strokeWeight(3);
   rect(x, y, w, h, 12);
 
-  // Honey drips
-  noStroke();
-  fill(235, 170, 20);
-
-  ellipse(x + 35, y + h, 16, 20);
-  ellipse(x + 80, y + h, 12, 18);
-  ellipse(x + 145, y + h, 18, 24);
-
   // Text
   fill(80, 50, 0);
   textAlign(CENTER, CENTER);
@@ -1011,6 +1010,60 @@ function mousePressed() {
     return;
   }
 
+  // ---------- SHOP PURCHASES ----------
+
+  let panelWidth = width * 0.42;
+  let panelX = width - panelWidth;
+
+  // Hive Upgrade
+  if (
+    shopOpen &&
+    mouseX > panelX + 35 &&
+    mouseX < panelX + 395 &&
+    mouseY > 140 &&
+    mouseY < 240
+  ) {
+    if (honey >= hiveUpgradeCost && MAX_HIVE_HEALTH < 200) {
+      honey -= hiveUpgradeCost;
+
+      MAX_HIVE_HEALTH += 20;
+
+      hiveHealth += 20;
+
+      if (hiveHealth > MAX_HIVE_HEALTH) {
+        hiveHealth = MAX_HIVE_HEALTH;
+      }
+
+      hiveUpgradeCost += 5000;
+    }
+
+    return;
+  }
+
+  // Honey Multiplier
+  if (
+    shopOpen &&
+    mouseX > panelX + 35 &&
+    mouseX < panelX + 395 &&
+    mouseY > 530 &&
+    mouseY < 630
+  ) {
+    if (
+      honey >= honeyMultiplierCost &&
+      honeyMultiplierLevel < maxHoneyMultiplierLevel
+    ) {
+      honey -= honeyMultiplierCost;
+
+      honeyMultiplierLevel++;
+
+      honeyMultiplier += 0.25;
+
+      honeyMultiplierCost += 8000;
+    }
+
+    return;
+  }
+
   // Bears
   for (let bear of bears) {
     if (
@@ -1023,7 +1076,7 @@ function mousePressed() {
         bear.leaving = true;
         bear.facing *= -1;
         score += 100;
-        honey += 100;
+        honey += 100 * honeyMultiplier;
       }
     }
   }
@@ -1039,7 +1092,7 @@ function mousePressed() {
       if (!bird.leaving) {
         bird.leaving = true;
         score += 150;
-        honey += 150;
+        honey += 150 * honeyMultiplier;
 
         if (bird.x < width / 2) bird.facing = -1;
         else bird.facing = 1;
