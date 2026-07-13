@@ -434,7 +434,7 @@ function draw() {
 
   // Beehive
   image(beehive, width / 2, height * 0.71, 150, 150);
-
+  drawTurret();
   drawMiniHiveHealthBar();
 
   // Bees
@@ -665,6 +665,14 @@ function drawShop() {
   drawUpgradeCard(
     panelX + 35,
     560,
+    "Turret",
+    "Automatically shoots enemies.",
+    turretCost,
+  );
+
+  drawUpgradeCard(
+    panelX + 35,
+    690,
     "Honey Multiplier",
     "Increase honey earned by 25%.",
     honeyMultiplierCost,
@@ -1124,13 +1132,30 @@ function mousePressed() {
     return;
   }
 
-  // Honey Multiplier
+  // Turret
   if (
     shopOpen &&
     mouseX > panelX + 35 &&
     mouseX < panelX + 395 &&
     mouseY > 530 &&
     mouseY < 630
+  ) {
+    if (!inventory.turret && honey >= turretCost) {
+      honey -= turretCost;
+
+      inventory.turret = true;
+    }
+
+    return;
+  }
+
+  // Honey Multiplier
+  if (
+    shopOpen &&
+    mouseX > panelX + 35 &&
+    mouseX < panelX + 395 &&
+    mouseY > 660 &&
+    mouseY < 760
   ) {
     if (
       honey >= honeyMultiplierCost &&
@@ -1353,4 +1378,16 @@ function keyPressed() {
     nextBearSpawn = millis() + 5000;
     nextBirdSpawn = millis() + 8000;
   }
+}
+
+function drawTurret() {
+  if (!inventory.turret) return;
+
+  fill(80);
+
+  rect(width / 2 - 12, height * 0.67, 24, 45, 5);
+
+  fill(50);
+
+  rect(width / 2 - 4, height * 0.63, 8, 20, 3);
 }
