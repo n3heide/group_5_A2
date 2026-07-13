@@ -276,6 +276,8 @@ function draw() {
     // Dark overlay
     fill(0, 170);
     rect(0, 0, width, height);
+    let panelWidth = width * 0.42;
+    let panelX = width - panelWidth;
 
     textAlign(CENTER, CENTER);
 
@@ -366,11 +368,9 @@ function draw() {
   background(135, 206, 235);
 
   updateScore();
-  drawTopUI();
   drawHiveHealthBar();
   drawHoneyUI();
   drawShopButton();
-  drawPauseButton();
   drawRoundProgressBar();
 
   // Clouds
@@ -562,13 +562,16 @@ function drawShop() {
   fill(0, 170);
   rect(0, 0, width, height);
 
-  let panelX = width / 2;
+  fill(92, 62, 28);
+  noStroke();
+  rect(panelX, 0, panelWidth, height);
 
-  fill(35);
-  stroke(255);
-  strokeWeight(3);
+  stroke(70, 45, 20);
+  strokeWeight(2);
 
-  rect(panelX, 0, width / 2, height);
+  for (let y = 0; y < height; y += 55) {
+    line(panelX, y, panelX + panelWidth, y);
+  }
 
   noStroke();
 
@@ -615,11 +618,23 @@ function drawShop() {
     "Permanent automatic defense.",
     turretCost,
   );
+
+  fill(165, 55, 55);
+  noStroke();
+
+  rect(panelX + panelWidth - 65, 20, 45, 45, 10);
+
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(24);
+
+  text("X", panelX + panelWidth - 42, 42);
 }
 
 function drawUpgradeCard(x, y, title, desc, cost) {
-  fill(255, 190, 40);
-  stroke(255);
+  fill(232, 213, 171);
+  stroke(95, 70, 35);
+  strokeWeight(3);
 
   rect(x, y, 360, 100, 15);
 
@@ -639,7 +654,7 @@ function drawUpgradeCard(x, y, title, desc, cost) {
 
   textSize(18);
 
-  text("🍯 " + cost, x + 20, y + 82);
+  text("Cost: " + cost + " Honey", x + 20, y + 82);
 }
 
 function drawGrassTexture() {
@@ -698,7 +713,7 @@ function drawRoundProgressBar() {
   let x = width / 2 - w / 2;
 
   // moved lower
-  let y = 90;
+  let y = 115;
 
   // Label
   textAlign(CENTER, CENTER);
@@ -885,45 +900,69 @@ function drawBirds() {
   }
 }
 
-function drawShopButton() {
-  fill(255, 180, 0);
+function drawHoneyUI() {
+  let w = 170;
+  let h = 40;
+
+  let x = 320;
+  let y = 18;
+
+  fill(40, 40, 40, 190);
   stroke(255);
   strokeWeight(2);
 
-  rect(width - 220, 20, 180, 45, 12);
+  rect(x, y, w, h, 10);
 
   noStroke();
-  fill(30);
+  fill(255);
 
+  textAlign(CENTER, CENTER);
+  textSize(18);
+
+  text("Honey: " + honey, x + w / 2, y + h / 2);
+}
+
+function drawShopButton() {
+  let w = 160;
+  let h = 48;
+
+  shopButton.x = width - w - 100; // leaves room for pause button
+  shopButton.y = 18;
+  shopButton.w = w;
+  shopButton.h = h;
+
+  fill(191, 130, 40);
+  stroke(255);
+  strokeWeight(2);
+
+  rect(shopButton.x, shopButton.y, w, h, 12);
+
+  noStroke();
+  fill(255);
   textAlign(CENTER, CENTER);
   textSize(20);
 
-  text("SHOP", width - 130, 43);
-
-  shopButton.x = width - 220;
-  shopButton.y = 20;
-}
-
-function drawHoneyUI() {
-  let x = width - 250;
-  let y = height - 70;
-
-  fill(40, 40, 40, 220);
-  stroke(255);
-  strokeWeight(2);
-
-  rect(x, y, 210, 50, 12);
-
-  noStroke();
-  fill(255, 220, 0);
-
-  textAlign(CENTER, CENTER);
-  textSize(22);
-
-  text("🍯 Honey: " + honey, x + 105, y + 25);
+  text("SHOP", shopButton.x + w / 2, shopButton.y + h / 2);
 }
 
 function mousePressed() {
+  if (shopOpen) {
+    let panelWidth = width * 0.42;
+    let panelX = width - panelWidth;
+
+    if (
+      mouseX > panelX + panelWidth - 65 &&
+      mouseX < panelX + panelWidth - 20 &&
+      mouseY > 20 &&
+      mouseY < 65
+    ) {
+      shopOpen = false;
+      paused = false;
+      loop();
+      return;
+    }
+  }
+
   if (
     mouseX > pauseButton.x &&
     mouseX < pauseButton.x + pauseButton.w &&
@@ -960,6 +999,7 @@ function mousePressed() {
 
     return;
   }
+
   // Bears
   for (let bear of bears) {
     if (
