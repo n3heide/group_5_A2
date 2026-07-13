@@ -36,6 +36,7 @@ let hiveLevel = 1;
 let honeyMultiplier = 1;
 let honeyMultiplierLevel = 0;
 let maxHoneyMultiplierLevel = 4;
+let cheatCode = "";
 
 // Turret
 
@@ -1146,32 +1147,34 @@ function mousePressed() {
   }
 
   // Turret
-  if (!inventory.turret) {
-    if (honey >= turretCost) {
-      honey -= turretCost;
-
-      inventory.turret = true;
-    }
-  } else if (turretLevel < maxTurretLevel) {
-    if (honey >= turretCost) {
-      honey -= turretCost;
-
-      turretLevel++;
-
-      if (turretLevel == 2) {
-        turretCooldown = 600;
-      } else if (turretLevel == 3) {
-        turretCooldown = 400;
+  if (
+    shopOpen &&
+    mouseX > panelX + 35 &&
+    mouseX < panelX + 395 &&
+    mouseY > 530 &&
+    mouseY < 630
+  ) {
+    if (!inventory.turret) {
+      if (honey >= turretCost) {
+        honey -= turretCost;
+        inventory.turret = true;
       }
+    } else if (turretLevel < maxTurretLevel) {
+      if (honey >= turretCost) {
+        honey -= turretCost;
 
-      turretCost += 12000;
-    }
-  }
-  {
-    if (!inventory.turret && honey >= turretCost) {
-      honey -= turretCost;
+        turretLevel++;
 
-      inventory.turret = true;
+        if (turretLevel == 2) {
+          turretCooldown = 600;
+        }
+
+        if (turretLevel == 3) {
+          turretCooldown = 400;
+        }
+
+        turretCost += 12000;
+      }
     }
 
     return;
@@ -1204,10 +1207,10 @@ function mousePressed() {
   // Bears
   for (let bear of bears) {
     if (
-      mouseX > bear.x - FRAME_WIDTH / 2 &&
-      mouseX < bear.x + FRAME_WIDTH / 2 &&
-      mouseY > bear.y - FRAME_HEIGHT / 2 &&
-      mouseY < bear.y + FRAME_HEIGHT / 2
+      mouseX > bear.x - 70 &&
+      mouseX < bear.x + 70 &&
+      mouseY > bear.y - 45 &&
+      mouseY < bear.y + 45
     ) {
       if (!bear.leaving) {
         bear.leaving = true;
@@ -1363,6 +1366,18 @@ function drawPauseButton() {
 }
 
 function keyPressed() {
+  if (key.length === 1) {
+    cheatCode += key.toUpperCase();
+
+    if (cheatCode.length > 10) {
+      cheatCode = cheatCode.slice(-10);
+    }
+
+    if (cheatCode.endsWith("HONEY")) {
+      honey = 999999;
+      console.log("Cheat activated!");
+    }
+  }
   console.log(key, keyCode);
   if (roundComplete && keyCode === ENTER) {
     roundComplete = false;
