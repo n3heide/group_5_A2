@@ -149,14 +149,11 @@ function setup() {
 }
 
 function updateDifficulty() {
-  // Current round
   round = floor(score / 10000) + 1;
 
-  // Progress through current round (0 → 1)
   let roundScore = score % 10000;
   let progress = constrain(roundScore / 10000, 0, 1);
 
-  // Show FASTER every 2500 score
   speedLevel = floor(roundScore / 2500);
 
   if (speedLevel > previousLevel) {
@@ -164,21 +161,28 @@ function updateDifficulty() {
     previousLevel = speedLevel;
   }
 
-  // Difficulty per round
+  // ---------- ROUND 1 ----------
   if (round === 1) {
-    bearSpawnDelay = lerp(2500, 300, progress);
-    birdSpawnDelay = lerp(3500, 500, progress);
-  } else if (round === 2) {
-    bearSpawnDelay = lerp(500, 180, progress);
-    birdSpawnDelay = lerp(900, 350, progress);
-  } else {
-    bearSpawnDelay = lerp(250, 100, progress);
-    birdSpawnDelay = lerp(500, 150, progress);
+    // Easier start and easier finish
+    bearSpawnDelay = lerp(2800, 550, progress);
+    birdSpawnDelay = lerp(3800, 800, progress);
   }
 
-  // Movement speed also increases
-  bearWalkSpeed = 1.5 + round * 0.5 + progress * 2.5;
-  birdWalkSpeed = 4 + round * 0.5 + progress * 2.5;
+  // ---------- ROUND 2 ----------
+  else if (round === 2) {
+    bearSpawnDelay = lerp(900, 350, progress);
+    birdSpawnDelay = lerp(1300, 550, progress);
+  }
+
+  // ---------- ROUND 3 ----------
+  else {
+    bearSpawnDelay = lerp(600, 220, progress);
+    birdSpawnDelay = lerp(900, 350, progress);
+  }
+
+  // Movement speed ramps up more gently
+  bearWalkSpeed = 1.5 + (round - 1) * 0.4 + progress * 1.4;
+  birdWalkSpeed = 4 + (round - 1) * 0.4 + progress * 1.2;
 }
 
 function draw() {
@@ -308,7 +312,7 @@ function draw() {
       lastAttack: 0,
     });
 
-    nextBearSpawn = millis() + random(bearSpawnDelay * 0.8, bearSpawnDelay);
+    nextBearSpawn = millis() + random(bearSpawnDelay * 1, bearSpawnDelay);
   }
 
   if (score >= roundTarget) {
@@ -337,7 +341,7 @@ function draw() {
 
     let level = floor((millis() - 30000) / 30000);
 
-    nextBirdSpawn = millis() + random(birdSpawnDelay * 0.8, birdSpawnDelay);
+    nextBirdSpawn = millis() + random(birdSpawnDelay * 1, birdSpawnDelay);
   }
 
   // Sky
@@ -620,28 +624,38 @@ function drawBees() {
 function drawRoundProgressBar() {
   let progress = (score % 10000) / 10000;
 
-  let w = 320;
-  let h = 16;
+  let w = 420;
+  let h = 18;
 
+  // Moved lower so it doesn't crowd the health bar
   let x = width / 2 - w / 2;
-  let y = 60;
+  let y = 72;
 
-  fill(60);
+  // Background
   noStroke();
-  rect(x, y, w, h, 10);
+  fill(35, 35, 35, 220);
+  rect(x, y, w, h, 12);
 
+  // Fill
   fill(255, 200, 0);
-  rect(x, y, w * progress, h, 10);
+  rect(x, y, w * progress, h, 12);
 
-  stroke(255);
+  // Border
   noFill();
-  rect(x, y, w, h, 10);
+  stroke(255);
+  strokeWeight(2);
+  rect(x, y, w, h, 12);
 
+  // Text
   noStroke();
   fill(255);
-  textSize(16);
   textAlign(CENTER, CENTER);
-  text("Round Progress", width / 2, y - 10);
+  textSize(16);
+  text(
+    "Round " + round + " Progress (" + floor(progress * 100) + "%)",
+    width / 2,
+    y - 16,
+  );
 }
 
 function drawBears() {
