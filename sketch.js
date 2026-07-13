@@ -15,7 +15,7 @@ let grassBlades = [];
 let bees = [];
 
 let roundComplete = false;
-let roundTarget = 10000;
+let roundTarget = 15000;
 
 let bearImage;
 let birdImage;
@@ -149,10 +149,10 @@ function setup() {
 }
 
 function updateDifficulty() {
-  round = floor(score / 10000) + 1;
+  round = floor(score / 15000) + 1;
 
-  let roundScore = score % 10000;
-  let progress = constrain(roundScore / 10000, 0, 1);
+  let roundScore = score % 15000;
+  let progress = constrain(roundScore / 15000, 0, 1);
 
   speedLevel = floor(roundScore / 2500);
 
@@ -162,27 +162,25 @@ function updateDifficulty() {
   }
 
   // ---------- ROUND 1 ----------
-  if (round === 1) {
-    // Easier start and easier finish
-    bearSpawnDelay = lerp(2800, 550, progress);
-    birdSpawnDelay = lerp(3800, 800, progress);
+  if (round == 1) {
+    bearSpawnDelay = lerp(3000, 650, progress);
+    birdSpawnDelay = lerp(4000, 900, progress);
   }
 
   // ---------- ROUND 2 ----------
-  else if (round === 2) {
-    bearSpawnDelay = lerp(900, 350, progress);
-    birdSpawnDelay = lerp(1300, 550, progress);
+  else if (round == 2) {
+    bearSpawnDelay = lerp(1200, 450, progress);
+    birdSpawnDelay = lerp(1700, 700, progress);
   }
 
   // ---------- ROUND 3 ----------
   else {
-    bearSpawnDelay = lerp(600, 220, progress);
-    birdSpawnDelay = lerp(900, 350, progress);
+    bearSpawnDelay = lerp(800, 250, progress);
+    birdSpawnDelay = lerp(1200, 450, progress);
   }
 
-  // Movement speed ramps up more gently
-  bearWalkSpeed = 1.5 + (round - 1) * 0.4 + progress * 1.4;
-  birdWalkSpeed = 4 + (round - 1) * 0.4 + progress * 1.2;
+  bearWalkSpeed = 1.5 + (round - 1) * 0.35 + progress * 1.2;
+  birdWalkSpeed = 4 + (round - 1) * 0.35 + progress * 1.2;
 }
 
 function draw() {
@@ -272,23 +270,42 @@ function draw() {
   }
 
   if (roundComplete) {
-    background(35, 60, 90);
+    background(25, 35, 60);
 
-    fill(255);
+    // Dark overlay
+    fill(0, 170);
+    rect(0, 0, width, height);
+
     textAlign(CENTER, CENTER);
 
-    textSize(60);
-    text("ROUND COMPLETE!", width / 2, height / 2 - 120);
+    fill(255, 210, 0);
+    textSize(70);
+    text("ROUND COMPLETE!", width / 2, height / 2 - 140);
 
+    fill(255);
     textSize(30);
-    text("Great job defending the hive!", width / 2, height / 2 - 40);
 
-    textSize(24);
+    text("Fantastic work defending your hive!", width / 2, height / 2 - 60);
+
+    fill(220);
+
+    textSize(22);
+
     text(
-      "Press ENTER to begin Round " + (round + 1),
+      "Take a breath.\nSpend your Honey on upgrades\nbefore the next round.",
       width / 2,
-      height / 2 + 70,
+      height / 2 + 20,
     );
+
+    fill(255, 190, 40);
+
+    rect(width / 2 - 170, height / 2 + 110, 340, 65, 16);
+
+    fill(40);
+
+    textSize(28);
+
+    text("Press ENTER for Round " + round, width / 2, height / 2 + 142);
 
     return;
   }
@@ -622,22 +639,34 @@ function drawBees() {
 }
 
 function drawRoundProgressBar() {
-  let progress = (score % 10000) / 10000;
+  let progress = (score % 15000) / 15000;
 
-  let w = 420;
+  let w = 430;
   let h = 18;
 
-  // Moved lower so it doesn't crowd the health bar
   let x = width / 2 - w / 2;
-  let y = 72;
+
+  // moved lower
+  let y = 90;
+
+  // Label
+  textAlign(CENTER, CENTER);
+  textSize(17);
+  noStroke();
+  fill(255);
+
+  text(
+    "Round " + round + "   " + floor(progress * 100) + "%",
+    width / 2,
+    y - 18,
+  );
 
   // Background
-  noStroke();
-  fill(35, 35, 35, 220);
+  fill(40, 40, 40, 220);
   rect(x, y, w, h, 12);
 
-  // Fill
-  fill(255, 200, 0);
+  // Progress
+  fill(255, 195, 40);
   rect(x, y, w * progress, h, 12);
 
   // Border
@@ -645,17 +674,6 @@ function drawRoundProgressBar() {
   stroke(255);
   strokeWeight(2);
   rect(x, y, w, h, 12);
-
-  // Text
-  noStroke();
-  fill(255);
-  textAlign(CENTER, CENTER);
-  textSize(16);
-  text(
-    "Round " + round + " Progress (" + floor(progress * 100) + "%)",
-    width / 2,
-    y - 16,
-  );
 }
 
 function drawBears() {
