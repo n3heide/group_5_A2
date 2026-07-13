@@ -687,8 +687,7 @@ function drawShop() {
   drawUpgradeCard(
     panelX + 35,
     690,
-    "Honey Multiplier",
-    "Increase honey earned by 25%.",
+    "Honey Multiplier Lv." + (honeyMultiplierLevel + 1),
     honeyMultiplierCost,
   );
 
@@ -708,13 +707,15 @@ function drawShop() {
   }
   noStroke();
 
-  rect(panelX + panelWidth - 65, 20, 45, 45, 10);
+  let size = closeHover ? 52 : 45;
+
+  rect(panelX + panelWidth - size - 20, 20, size, size, 10);
 
   fill(255);
   textAlign(CENTER, CENTER);
   textSize(24);
 
-  text("X", panelX + panelWidth - 42, 42);
+  text("X", panelX + panelWidth - size / 2 - 20, 20 + size / 2);
 }
 
 function drawUpgradeCard(x, y, title, desc, cost) {
@@ -735,7 +736,7 @@ function drawUpgradeCard(x, y, title, desc, cost) {
   stroke(95, 70, 35);
   strokeWeight(3);
 
-  let grow = hovering && canBuy ? 6 : 0;
+  let grow = hovering ? 12 : 0;
   if (hovering && canBuy) {
     stroke(255, 220, 0);
     strokeWeight(5);
@@ -1158,12 +1159,16 @@ function mousePressed() {
       if (honey >= turretCost) {
         honey -= turretCost;
         inventory.turret = true;
+
+        redraw();
       }
     } else if (turretLevel < maxTurretLevel) {
       if (honey >= turretCost) {
         honey -= turretCost;
 
         turretLevel++;
+
+        redraw();
 
         if (turretLevel == 2) {
           turretCooldown = 600;
@@ -1197,6 +1202,8 @@ function mousePressed() {
       honeyMultiplierLevel++;
 
       honeyMultiplier += 0.25;
+
+      redraw();
 
       honeyMultiplierCost += 8000;
     }
@@ -1478,14 +1485,15 @@ function drawTurret() {
   push();
 
   translate(tx, ty);
-
   rotate(turretAngle);
 
+  // Base
   fill(70);
-  rect(-10, 0, 20, 35);
+  circle(0, 0, 28);
 
+  // Barrel
   fill(40);
-  rect(-4, -25, 8, 30);
+  rect(0, -4, 40, 8, 3);
 
   pop();
 }
@@ -1504,10 +1512,12 @@ function updateBullets() {
     // Hit bears
     for (let bear of bears) {
       if (bear.leaving) continue;
-
       if (dist(b.x, b.y, bear.x, bear.y) < 40) {
         bear.leaving = true;
         bear.facing *= -1;
+
+        score += 100;
+        honey += 100 * honeyMultiplier;
 
         bullets.splice(i, 1);
 
@@ -1521,6 +1531,9 @@ function updateBullets() {
 
       if (dist(b.x, b.y, bird.x, bird.y) < 40) {
         bird.leaving = true;
+
+        score += 150;
+        honey += 150 * honeyMultiplier;
 
         bullets.splice(i, 1);
 
