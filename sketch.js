@@ -31,8 +31,8 @@ let fasterTimer = 0;
 let previousLevel = 0;
 let scoreLevel = 0;
 
-let bearSpawnDelay = 12000;
-let birdSpawnDelay = 15000;
+let bearSpawnDelay = 2500;
+let birdSpawnDelay = 3500;
 
 const BIRD_COLS = 8;
 const BIRD_ROWS = 3;
@@ -149,19 +149,36 @@ function setup() {
 }
 
 function updateDifficulty() {
-  // Every 2,500 points enemies get a little faster
-  speedLevel = floor(score / 2500);
-
-  // Every 10,000 points is a new round
+  // Current round
   round = floor(score / 10000) + 1;
+
+  // Progress through current round (0 → 1)
+  let roundScore = score % 10000;
+  let progress = constrain(roundScore / 10000, 0, 1);
+
+  // Show FASTER every 2500 score
+  speedLevel = floor(roundScore / 2500);
 
   if (speedLevel > previousLevel) {
     fasterTimer = 120;
     previousLevel = speedLevel;
   }
 
-  bearWalkSpeed = 1.5 + speedLevel * 0.15;
-  birdWalkSpeed = 4 + speedLevel * 0.2;
+  // Difficulty per round
+  if (round === 1) {
+    bearSpawnDelay = lerp(2500, 300, progress);
+    birdSpawnDelay = lerp(3500, 500, progress);
+  } else if (round === 2) {
+    bearSpawnDelay = lerp(500, 180, progress);
+    birdSpawnDelay = lerp(900, 350, progress);
+  } else {
+    bearSpawnDelay = lerp(250, 100, progress);
+    birdSpawnDelay = lerp(500, 150, progress);
+  }
+
+  // Movement speed also increases
+  bearWalkSpeed = 1.5 + round * 0.5 + progress * 2.5;
+  birdWalkSpeed = 4 + round * 0.5 + progress * 2.5;
 }
 
 function draw() {
@@ -291,7 +308,7 @@ function draw() {
       lastAttack: 0,
     });
 
-    nextBearSpawn = millis() + random(bearSpawnDelay * 0.5, bearSpawnDelay);
+    nextBearSpawn = millis() + random(bearSpawnDelay * 0.8, bearSpawnDelay);
   }
 
   if (score >= roundTarget) {
@@ -320,7 +337,7 @@ function draw() {
 
     let level = floor((millis() - 30000) / 30000);
 
-    nextBirdSpawn = millis() + random(birdSpawnDelay * 0.5, birdSpawnDelay);
+    nextBirdSpawn = millis() + random(birdSpawnDelay * 0.8, birdSpawnDelay);
   }
 
   // Sky
@@ -332,6 +349,7 @@ function draw() {
   drawShopButton();
   drawHoneyUI();
   drawHiveHealthBar();
+  drawRoundProgressBar();
 
   // Clouds
   drawClouds();
@@ -597,6 +615,33 @@ function drawBees() {
 
     image(beeImage, bee.x, bee.y, bee.size, bee.size);
   }
+}
+
+function drawRoundProgressBar() {
+  let progress = (score % 10000) / 10000;
+
+  let w = 320;
+  let h = 16;
+
+  let x = width / 2 - w / 2;
+  let y = 60;
+
+  fill(60);
+  noStroke();
+  rect(x, y, w, h, 10);
+
+  fill(255, 200, 0);
+  rect(x, y, w * progress, h, 10);
+
+  stroke(255);
+  noFill();
+  rect(x, y, w, h, 10);
+
+  noStroke();
+  fill(255);
+  textSize(16);
+  textAlign(CENTER, CENTER);
+  text("Round Progress", width / 2, y - 10);
 }
 
 function drawBears() {
@@ -982,11 +1027,16 @@ function keyPressed() {
 
     roundTarget += 10000;
 
+    // Reset "FASTER" checkpoints
+    previousLevel = -1;
+    speedLevel = 0;
+
     bears = [];
     birds = [];
 
-    nextBearSpawn = millis() + 1500;
-    nextBirdSpawn = millis() + 4000;
+    // Small break before enemies return
+    nextBearSpawn = millis() + 2000;
+    nextBirdSpawn = millis() + 3000;
   }
 
   // Start game
