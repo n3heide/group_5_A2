@@ -6,6 +6,37 @@ let pauseButton = {
   w: 60,
   h: 45,
 };
+// ================= SHOP =================
+let shopOpen = false;
+
+let shopButton = {
+  x: 20,
+  y: 0,
+  w: 180,
+  h: 50,
+};
+
+// Inventory
+let inventory = {
+  hiveUpgrade: 0,
+  beeStorm: 0,
+  healthPotion: 0,
+  turret: false,
+};
+
+// Costs
+let hiveUpgradeCost = 1000;
+let beeStormCost = 3000;
+let healthPotionCost = 2000;
+let turretCost = 6000;
+
+// Hive upgrades
+let hiveLevel = 1;
+
+// Turret
+let turretCooldown = 1500;
+let lastTurretShot = 0;
+
 let beehive;
 let beeImage;
 let round = 1;
@@ -366,10 +397,10 @@ function draw() {
 
   updateScore();
   drawTopUI();
-  drawPauseButton();
-  drawShopButton();
-  drawHoneyUI();
   drawHiveHealthBar();
+  drawHoneyUI();
+  drawShopButton();
+  drawPauseButton();
   drawRoundProgressBar();
 
   // Clouds
@@ -558,37 +589,87 @@ function drawBee(x, y, s) {
 }
 
 function drawShop() {
-  fill(0, 0, 0, 180);
+  fill(0, 170);
   rect(0, 0, width, height);
+
+  let panelX = width / 2;
 
   fill(35);
   stroke(255);
   strokeWeight(3);
 
-  rect(width - 430, 0, 430, height);
+  rect(panelX, 0, width / 2, height);
 
   noStroke();
+
   fill(255);
 
-  textAlign(CENTER, CENTER);
-  textSize(34);
+  textAlign(CENTER);
 
-  text("UPGRADES", width - 215, 45);
+  textSize(36);
+
+  text("HIVE SHOP", panelX + width / 4, 60);
+
+  textSize(18);
+
+  text("Spend Honey to defend your hive.", panelX + width / 4, 95);
+
+  drawUpgradeCard(
+    panelX + 35,
+    140,
+    "Hive Upgrade",
+    "Increase max hive health by 20.",
+    hiveUpgradeCost,
+  );
+
+  drawUpgradeCard(
+    panelX + 35,
+    270,
+    "Bee Storm",
+    "Store one Bee Storm for later use.",
+    beeStormCost,
+  );
+
+  drawUpgradeCard(
+    panelX + 35,
+    400,
+    "Health Potion",
+    "Store one full heal.",
+    healthPotionCost,
+  );
+
+  drawUpgradeCard(
+    panelX + 35,
+    530,
+    "Honey Turret",
+    "Permanent automatic defense.",
+    turretCost,
+  );
+}
+
+function drawUpgradeCard(x, y, title, desc, cost) {
   fill(255, 190, 40);
+  stroke(255);
 
-  rect(width - 390, 100, 350, 60, 12);
-  rect(width - 390, 190, 350, 60, 12);
-  rect(width - 390, 280, 350, 60, 12);
+  rect(x, y, 360, 100, 15);
+
+  noStroke();
 
   fill(30);
 
-  textSize(20);
+  textAlign(LEFT);
 
-  text("Hive Upgrade\n🍯 " + hiveUpgradeCost, width - 215, 130);
+  textSize(22);
 
-  text("Bee Swarm\n🍯 " + beeSwarmCost, width - 215, 220);
+  text(title, x + 20, y + 28);
 
-  text("Honey Turret\n🍯 " + turretCost, width - 215, 310);
+  textSize(15);
+
+  text(desc, x + 20, y + 55);
+
+  textSize(18);
+
+  text("🍯 " + cost, x + 20, y + 82);
 }
 
 function drawGrassTexture() {
@@ -835,38 +916,41 @@ function drawBirds() {
 }
 
 function drawShopButton() {
-  fill(255, 190, 40);
+  fill(255, 180, 0);
   stroke(255);
   strokeWeight(2);
 
-  rect(shopButton.x, shopButton.y, shopButton.w, shopButton.h, 12);
+  rect(width - 220, 20, 180, 45, 12);
 
   noStroke();
-  fill(40);
+  fill(30);
 
   textAlign(CENTER, CENTER);
   textSize(20);
 
-  text(
-    "UPGRADES",
-    shopButton.x + shopButton.w / 2,
-    shopButton.y + shopButton.h / 2,
-  );
+  text("SHOP", width - 130, 43);
+
+  shopButton.x = width - 220;
+  shopButton.y = 20;
 }
+
 function drawHoneyUI() {
-  fill(40, 40, 40, 180);
+  let x = width - 250;
+  let y = height - 70;
+
+  fill(40, 40, 40, 220);
   stroke(255);
   strokeWeight(2);
 
-  rect(210, height - 70, 170, 50, 12);
+  rect(x, y, 210, 50, 12);
 
   noStroke();
   fill(255, 220, 0);
 
   textAlign(CENTER, CENTER);
-  textSize(20);
+  textSize(22);
 
-  text("🍯 " + honey, 295, height - 45);
+  text("🍯 Honey: " + honey, x + 105, y + 25);
 }
 
 function mousePressed() {
@@ -895,9 +979,11 @@ function mousePressed() {
   ) {
     shopOpen = !shopOpen;
 
-    if (shopOpen) {
-      redraw();
+    paused = shopOpen;
+
+    if (paused) {
       noLoop();
+      redraw();
     } else {
       loop();
     }
