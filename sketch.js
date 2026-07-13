@@ -92,36 +92,6 @@ let bearAttacking = false;
 let MAX_HIVE_HEALTH = 100;
 
 let bears = [];
-let turretOwned = false;
-let turretLevel = 0;
-
-let beeSwarmOwned = false;
-
-let hiveUpgradeCost = 1000;
-let turretCost = 7500;
-let beeSwarmCost = 5000;
-let turretCooldown = 2000;
-let lastTurretShot = 0;
-
-let beeSwarmCooldown = 30000;
-let lastBeeSwarm = -30000;
-
-let minSpawnTime = 7000;
-let maxSpawnTime = 15000;
-
-let bearWalkSpeed = 1.5;
-
-// Bear attacks
-let lastBearAttack = 0;
-
-let shopOpen = false;
-
-let shopButton = {
-  x: 20,
-  y: 0,
-  w: 180,
-  h: 50,
-};
 
 const FRAME_WIDTH = 80; // 320 / 4
 const FRAME_HEIGHT = 48;
@@ -180,7 +150,7 @@ function setup() {
 }
 
 function updateDifficulty() {
-  round = floor(score / 15000) + 1;
+  round = floor(roundTarget / 15000);
 
   let roundScore = score % 15000;
   let progress = constrain(roundScore / 15000, 0, 1);
