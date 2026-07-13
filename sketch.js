@@ -270,9 +270,30 @@ function draw() {
     textSize(30);
     text("High Score: " + highScore, width / 2, height / 2 + 20);
 
-    fill(255, 220, 0);
+    let bx = width / 2 - 170;
+    let by = height / 2 + 80;
+    let bw = 340;
+    let bh = 65;
+
+    let hovering =
+      mouseX > bx && mouseX < bx + bw && mouseY > by && mouseY < by + bh;
+
+    if (hovering) {
+      fill(255, 220, 70);
+      stroke(255);
+      strokeWeight(4);
+    } else {
+      fill(255, 190, 40);
+      noStroke();
+    }
+
+    rect(bx, by, bw, bh, 16);
+
+    fill(40);
+
     textSize(26);
-    text("Press SPACE to Play Again", width / 2, height / 2 + 110);
+
+    text("Press SPACE to Play Again", width / 2, by + bh / 2);
 
     return;
   }
@@ -308,6 +329,21 @@ function draw() {
     );
 
     fill(255, 190, 40);
+
+    let hovering =
+      mouseX > width / 2 - 170 &&
+      mouseX < width / 2 + 170 &&
+      mouseY > height / 2 + 110 &&
+      mouseY < height / 2 + 175;
+
+    if (hovering) {
+      fill(255, 220, 70);
+      stroke(255);
+      strokeWeight(4);
+    } else {
+      fill(255, 190, 40);
+      noStroke();
+    }
 
     rect(width / 2 - 170, height / 2 + 110, 340, 65, 16);
 
@@ -634,7 +670,20 @@ function drawShop() {
     honeyMultiplierCost,
   );
 
-  fill(165, 55, 55);
+  let closeHover =
+    mouseX > panelX + panelWidth - 65 &&
+    mouseX < panelX + panelWidth - 20 &&
+    mouseY > 20 &&
+    mouseY < 65;
+
+  if (closeHover) {
+    fill(220, 80, 80);
+    stroke(255);
+    strokeWeight(3);
+  } else {
+    fill(165, 55, 55);
+    noStroke();
+  }
   noStroke();
 
   rect(panelX + panelWidth - 65, 20, 45, 45, 10);
@@ -664,7 +713,12 @@ function drawUpgradeCard(x, y, title, desc, cost) {
   stroke(95, 70, 35);
   strokeWeight(3);
 
-  rect(x, y, 360, 100, 15);
+  let grow = hovering && canBuy ? 6 : 0;
+  if (hovering && canBuy) {
+    stroke(255, 220, 0);
+    strokeWeight(5);
+  }
+  rect(x - grow / 2, y - grow / 2, 360 + grow, 100 + grow, 15);
 
   noStroke();
 
@@ -957,9 +1011,21 @@ function drawShopButton() {
   shopButton.w = w;
   shopButton.h = h;
 
-  fill(191, 130, 40);
-  stroke(255);
-  strokeWeight(2);
+  let hovering =
+    mouseX > shopButton.x &&
+    mouseX < shopButton.x + w &&
+    mouseY > shopButton.y &&
+    mouseY < shopButton.y + h;
+
+  if (hovering) {
+    stroke(255);
+    strokeWeight(4);
+    fill(230, 170, 60);
+  } else {
+    stroke(255);
+    strokeWeight(2);
+    fill(191, 130, 40);
+  }
 
   rect(shopButton.x, shopButton.y, w, h, 12);
 
@@ -1208,8 +1274,20 @@ function drawTopUI() {
 }
 
 function drawPauseButton() {
-  fill(255, 180, 0);
-  noStroke();
+  let hovering =
+    mouseX > pauseButton.x &&
+    mouseX < pauseButton.x + pauseButton.w &&
+    mouseY > pauseButton.y &&
+    mouseY < pauseButton.y + pauseButton.h;
+
+  if (hovering) {
+    stroke(255);
+    strokeWeight(4);
+    fill(255, 220, 60);
+  } else {
+    noStroke();
+    fill(255, 180, 0);
+  }
   rect(pauseButton.x, pauseButton.y, pauseButton.w, pauseButton.h, 12);
 
   fill(50);
@@ -1232,6 +1310,7 @@ function drawPauseButton() {
 }
 
 function keyPressed() {
+  console.log(key, keyCode);
   if (roundComplete && keyCode === ENTER) {
     roundComplete = false;
 
@@ -1250,7 +1329,7 @@ function keyPressed() {
   }
 
   // Start game
-  if (!gameStarted && key === " ") {
+  if (!gameStarted && key === " " && !gameOver) {
     gameStarted = true;
     introTimer = 300;
   }
