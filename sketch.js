@@ -597,10 +597,14 @@ function drawShop() {
   textSize(18);
 
   text("Spend Honey to defend your hive.", panelX + width / 4, 95);
+  fill(255, 210, 0);
+  textSize(24);
+  textAlign(CENTER);
+  text("Honey: 🍯 " + floor(honey), panelX + width / 4, 125);
 
   drawUpgradeCard(
     panelX + 35,
-    140,
+    170,
     "Hive Upgrade",
     "Increase max health by 20 (Max 200).",
     hiveUpgradeCost,
@@ -608,7 +612,7 @@ function drawShop() {
 
   drawUpgradeCard(
     panelX + 35,
-    270,
+    300,
     "Bee Storm",
     "Store one Bee Storm for later use.",
     beeStormCost,
@@ -616,7 +620,7 @@ function drawShop() {
 
   drawUpgradeCard(
     panelX + 35,
-    400,
+    430,
     "Health Potion",
     "Store one full heal.",
     healthPotionCost,
@@ -624,7 +628,7 @@ function drawShop() {
 
   drawUpgradeCard(
     panelX + 35,
-    530,
+    560,
     "Honey Multiplier",
     "Increase honey earned by 25%.",
     honeyMultiplierCost,
@@ -643,7 +647,20 @@ function drawShop() {
 }
 
 function drawUpgradeCard(x, y, title, desc, cost) {
-  fill(232, 213, 171);
+  let canBuy = honey >= cost;
+  let hovering =
+    mouseX > x && mouseX < x + 360 && mouseY > y && mouseY < y + 100;
+
+  if (canBuy) {
+    if (hovering) {
+      fill(255, 240, 170);
+    } else {
+      fill(232, 213, 171);
+    }
+  } else {
+    fill(120);
+  }
+
   stroke(95, 70, 35);
   strokeWeight(3);
 
@@ -1029,6 +1046,7 @@ function mousePressed() {
       MAX_HIVE_HEALTH += 20;
 
       hiveHealth += 20;
+      redraw();
 
       if (hiveHealth > MAX_HIVE_HEALTH) {
         hiveHealth = MAX_HIVE_HEALTH;
