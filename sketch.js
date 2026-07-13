@@ -38,8 +38,16 @@ let honeyMultiplierLevel = 0;
 let maxHoneyMultiplierLevel = 4;
 
 // Turret
-let turretCooldown = 1500;
+
+let turretLevel = 1;
+let maxTurretLevel = 3;
+
+let turretCooldown = 800; // milliseconds
 let lastTurretShot = 0;
+
+let turretAngle = 0;
+
+let bullets = [];
 let healthPotionCount = 0;
 let lastPotionUse = 0;
 let potionCooldown = 10000;
@@ -435,6 +443,7 @@ function draw() {
   // Beehive
   image(beehive, width / 2, height * 0.71, 150, 150);
   drawTurret();
+  updateBullets();
   drawMiniHiveHealthBar();
 
   // Bees
@@ -664,9 +673,13 @@ function drawShop() {
 
   drawUpgradeCard(
     panelX + 35,
+
     560,
-    "Turret",
-    "Automatically shoots enemies.",
+
+    "Turret Lv." + turretLevel,
+
+    "Targets nearest enemy automatically.",
+
     turretCost,
   );
 
@@ -1133,13 +1146,28 @@ function mousePressed() {
   }
 
   // Turret
-  if (
-    shopOpen &&
-    mouseX > panelX + 35 &&
-    mouseX < panelX + 395 &&
-    mouseY > 530 &&
-    mouseY < 630
-  ) {
+  if (!inventory.turret) {
+    if (honey >= turretCost) {
+      honey -= turretCost;
+
+      inventory.turret = true;
+    }
+  } else if (turretLevel < maxTurretLevel) {
+    if (honey >= turretCost) {
+      honey -= turretCost;
+
+      turretLevel++;
+
+      if (turretLevel == 2) {
+        turretCooldown = 600;
+      } else if (turretLevel == 3) {
+        turretCooldown = 400;
+      }
+
+      turretCost += 12000;
+    }
+  }
+  {
     if (!inventory.turret && honey >= turretCost) {
       honey -= turretCost;
 
@@ -1383,11 +1411,111 @@ function keyPressed() {
 function drawTurret() {
   if (!inventory.turret) return;
 
-  fill(80);
+  let tx = width / 2;
+  let ty = height * 0.66;
 
-  rect(width / 2 - 12, height * 0.67, 24, 45, 5);
+  let closest = null;
+  let closestDist = 999999;
 
-  fill(50);
+  // Look through bears
+  for (let bear of bears) {
+    if (bear.leaving) continue;
 
-  rect(width / 2 - 4, height * 0.63, 8, 20, 3);
+    let d = dist(tx, ty, bear.x, bear.y);
+
+    if (d < closestDist) {
+      closestDist = d;
+      closest = bear;
+    }
+  }
+
+  // Look through birds
+  for (let bird of birds) {
+    if (bird.leaving) continue;
+
+    let d = dist(tx, ty, bird.x, bird.y);
+
+    if (d < closestDist) {
+      closestDist = d;
+      closest = bird;
+    }
+  }
+
+  // Rotate toward target
+  if (closest != null) {
+    turretAngle = atan2(closest.y - ty, closest.x - tx);
+
+    // Shoot every cooldown
+    if (millis() - lastTurretShot > turretCooldown) {
+      bullets.push({
+        x: tx,
+
+        y: ty,
+
+        angle: turretAngle,
+      });
+
+      lastTurretShot = millis();
+    }
+  }
+
+  // Draw turret
+  push();
+
+  translate(tx, ty);
+
+  rotate(turretAngle);
+
+  fill(70);
+  rect(-10, 0, 20, 35);
+
+  fill(40);
+  rect(-4, -25, 8, 30);
+
+  pop();
+}
+
+function updateBullets() {
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    let b = bullets[i];
+
+    b.x += cos(b.angle) * 10;
+    b.y += sin(b.angle) * 10;
+
+    fill(255, 220, 0);
+    noStroke();
+    circle(b.x, b.y, 10);
+
+    // Hit bears
+    for (let bear of bears) {
+      if (bear.leaving) continue;
+
+      if (dist(b.x, b.y, bear.x, bear.y) < 40) {
+        bear.leaving = true;
+        bear.facing *= -1;
+
+        bullets.splice(i, 1);
+
+        break;
+      }
+    }
+
+    // Hit birds
+    for (let bird of birds) {
+      if (bird.leaving) continue;
+
+      if (dist(b.x, b.y, bird.x, bird.y) < 40) {
+        bird.leaving = true;
+
+        bullets.splice(i, 1);
+
+        break;
+      }
+    }
+
+    // Remove off screen
+    if (b.x < 0 || b.x > width || b.y < 0 || b.y > height) {
+      bullets.splice(i, 1);
+    }
+  }
 }
