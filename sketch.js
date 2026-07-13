@@ -458,7 +458,11 @@ function draw() {
   drawTopUI();
   drawPauseButton();
 
-  if (paused) {
+  if (shopOpen) {
+    drawShop();
+  }
+
+  if (paused && !shopOpen) {
     fill(80, 80, 80, 170);
     noStroke();
     rect(0, 0, width, height);
@@ -470,9 +474,6 @@ function draw() {
     textAlign(CENTER, CENTER);
     textSize(80);
     text("PAUSED", width / 2, height / 2);
-  }
-  if (shopOpen) {
-    drawShop();
   }
 }
 
@@ -559,6 +560,9 @@ function drawBee(x, y, s) {
 }
 
 function drawShop() {
+  let panelWidth = width * 0.42;
+  let panelX = width - panelWidth;
+
   fill(0, 170);
   rect(0, 0, width, height);
 
@@ -901,25 +905,31 @@ function drawBirds() {
 }
 
 function drawHoneyUI() {
-  let w = 170;
-  let h = 40;
+  let w = 180;
+  let h = 46;
 
   let x = 320;
-  let y = 18;
+  let y = 15;
 
-  fill(40, 40, 40, 190);
-  stroke(255);
-  strokeWeight(2);
+  // Honey coloured box
+  fill(245, 190, 35);
+  stroke(160, 110, 20);
+  strokeWeight(3);
+  rect(x, y, w, h, 12);
 
-  rect(x, y, w, h, 10);
-
+  // Honey drips
   noStroke();
-  fill(255);
+  fill(235, 170, 20);
 
+  ellipse(x + 35, y + h, 16, 20);
+  ellipse(x + 80, y + h, 12, 18);
+  ellipse(x + 145, y + h, 18, 24);
+
+  // Text
+  fill(80, 50, 0);
   textAlign(CENTER, CENTER);
   textSize(18);
-
-  text("Honey: " + honey, x + w / 2, y + h / 2);
+  text("🍯 " + honey, x + w / 2, y + h / 2);
 }
 
 function drawShopButton() {
@@ -980,6 +990,7 @@ function mousePressed() {
 
     return;
   }
+
   if (
     mouseX > shopButton.x &&
     mouseX < shopButton.x + shopButton.w &&
@@ -988,12 +999,12 @@ function mousePressed() {
   ) {
     shopOpen = !shopOpen;
 
-    paused = shopOpen;
-
-    if (paused) {
+    if (shopOpen) {
+      paused = true;
       noLoop();
       redraw();
     } else {
+      paused = false;
       loop();
     }
 
