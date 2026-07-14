@@ -16,6 +16,18 @@ let shopButton = {
   h: 50,
 };
 
+// Music & Sound Effects
+let bearGrowlSound;
+let buttonClickSound;
+let birdSquawkSound;
+let hiveDamageSound;
+let beesBuzzingSound;
+let turretShotSound;
+let purchaseSound;
+let declineSound;
+let achievementSound;
+let backgroundMusic;
+
 // Inventory
 let inventory = {
   hiveUpgrade: 0,
@@ -117,12 +129,32 @@ function preload() {
   beehive = loadImage("assets/images/beehive.png");
   beeImage = loadImage("assets/images/happy_bee.png");
   bearImage = loadImage("assets/images/bear.png");
+
+  bearGrowlSound = loadSound("assets/sounds/bear_growl.wav");
+  buttonClickSound = loadSound("assets/sounds/button_click.wav");
+  birdSquawkSound = loadSound("assets/sounds/bird_squak.wav");
+  hiveDamageSound = loadSound("assets/sounds/hive_damage.wav");
+  beesBuzzingSound = loadSound("assets/sounds/bees_buzzing.wav");
+  turretShotSound = loadSound("assets/sounds/turret_shot.wav");
+  purchaseSound = loadSound("assets/sounds/purchase.wav");
+  declineSound = loadSound("assets/sounds/decline.wav");
+  achievementSound = loadSound("assets/sounds/achievement.wav");
+  backgroundMusic = loadSound("assets/sounds/background_music.mp3");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   imageMode(CENTER);
   textFont("Trebuchet MS");
+  backgroundMusic.setVolume(0.25);
+  bearGrowlSound.setVolume(0.6);
+  birdSquawkSound.setVolume(2);
+  turretShotSound.setVolume(0.3); // quieter turret
+  buttonClickSound.setVolume(1);
+  purchaseSound.setVolume(0.7);
+  declineSound.setVolume(0.7);
+  achievementSound.setVolume(0.7);
+  hiveDamageSound.setVolume(0.6);
   pauseButton.x = width - pauseButton.w - 20;
   pauseButton.y = 15;
   bearX = -100; // Start off-screen
@@ -366,6 +398,50 @@ function draw() {
   }
 
   updateDifficulty();
+  if (paused || shopOpen) {
+    background(135, 206, 235);
+
+    drawHiveHealthBar();
+    drawHoneyUI();
+    drawShopButton();
+    drawRoundProgressBar();
+
+    drawClouds();
+
+    fill(34, 139, 34);
+    noStroke();
+    rect(0, height * 0.75, width, height * 0.25);
+
+    drawGrassTexture();
+    drawBears();
+    drawBirds();
+
+    image(beehive, width / 2, height * 0.71, 150, 150);
+    drawTurret();
+    updateBullets();
+    drawMiniHiveHealthBar();
+    drawBees();
+
+    drawTopUI();
+    drawPauseButton();
+
+    if (shopOpen) {
+      drawShop();
+    }
+
+    if (paused && !shopOpen) {
+      fill(80, 80, 80, 170);
+      noStroke();
+      rect(0, 0, width, height);
+
+      fill(255);
+      textAlign(CENTER, CENTER);
+      textSize(80);
+      text("PAUSED", width / 2, height / 2);
+    }
+
+    return;
+  }
   if (introTimer <= 0 && millis() > nextBearSpawn) {
     let direction = random() < 0.5 ? 1 : -1;
 
@@ -388,6 +464,10 @@ function draw() {
   }
 
   if (score >= roundTarget) {
+    if (!roundComplete) {
+      achievementSound.play();
+    }
+
     roundComplete = true;
     return;
   }
@@ -420,10 +500,6 @@ function draw() {
   background(135, 206, 235);
 
   updateScore();
-  drawHiveHealthBar();
-  drawHoneyUI();
-  drawShopButton();
-  drawRoundProgressBar();
 
   // Clouds
   drawClouds();
@@ -509,6 +585,10 @@ function draw() {
     gameOver = true;
   }
   drawTopUI();
+  drawHiveHealthBar();
+  drawHoneyUI();
+  drawRoundProgressBar();
+  drawShopButton();
   drawPauseButton();
 
   if (shopOpen) {
@@ -688,6 +768,7 @@ function drawShop() {
     panelX + 35,
     690,
     "Honey Multiplier Lv." + (honeyMultiplierLevel + 1),
+    "Increase honey earned from enemies.",
     honeyMultiplierCost,
   );
 
@@ -733,14 +814,16 @@ function drawUpgradeCard(x, y, title, desc, cost) {
     fill(120);
   }
 
-  stroke(95, 70, 35);
-  strokeWeight(3);
+  let grow = hovering ? 8 : 0;
 
-  let grow = hovering ? 12 : 0;
-  if (hovering && canBuy) {
-    stroke(255, 220, 0);
-    strokeWeight(5);
+  if (hovering) {
+    stroke(255);
+    strokeWeight(4);
+  } else {
+    stroke(95, 70, 35);
+    strokeWeight(3);
   }
+
   rect(x - grow / 2, y - grow / 2, 360 + grow, 100 + grow, 15);
 
   noStroke();
@@ -881,6 +964,7 @@ function drawBears() {
     if (!bear.leaving && distanceToHive <= 120) {
       if (millis() - bear.lastAttack > 1500) {
         hiveHealth -= 5;
+        hiveDamageSound.play();
         hiveHealth = max(0, hiveHealth);
 
         bear.lastAttack = millis();
@@ -958,6 +1042,7 @@ function drawBirds() {
     if (!bird.leaving && distanceToHive < 100) {
       if (millis() - bird.lastAttack > 2000) {
         hiveHealth -= 5;
+        hiveDamageSound.play();
         hiveHealth = max(0, hiveHealth);
 
         bird.lastAttack = millis();
@@ -1071,9 +1156,9 @@ function mousePressed() {
       mouseY > 20 &&
       mouseY < 65
     ) {
+      buttonClickSound.play();
       shopOpen = false;
       paused = false;
-      loop();
       return;
     }
   }
@@ -1084,6 +1169,7 @@ function mousePressed() {
     mouseY > pauseButton.y &&
     mouseY < pauseButton.y + pauseButton.h
   ) {
+    buttonClickSound.play();
     paused = !paused;
 
     if (paused) {
@@ -1102,15 +1188,13 @@ function mousePressed() {
     mouseY > shopButton.y &&
     mouseY < shopButton.y + shopButton.h
   ) {
+    buttonClickSound.play();
     shopOpen = !shopOpen;
 
     if (shopOpen) {
       paused = true;
-      noLoop();
-      redraw();
     } else {
       paused = false;
-      loop();
     }
 
     return;
@@ -1131,7 +1215,7 @@ function mousePressed() {
   ) {
     if (honey >= hiveUpgradeCost && MAX_HIVE_HEALTH < 200) {
       honey -= hiveUpgradeCost;
-
+      purchaseSound.play();
       MAX_HIVE_HEALTH += 20;
 
       hiveHealth += 20;
@@ -1142,6 +1226,8 @@ function mousePressed() {
       }
 
       hiveUpgradeCost += 5000;
+    } else {
+      declineSound.play();
     }
 
     return;
@@ -1158,6 +1244,7 @@ function mousePressed() {
     if (!inventory.turret) {
       if (honey >= turretCost) {
         honey -= turretCost;
+        purchaseSound.play();
         inventory.turret = true;
 
         redraw();
@@ -1165,7 +1252,7 @@ function mousePressed() {
     } else if (turretLevel < maxTurretLevel) {
       if (honey >= turretCost) {
         honey -= turretCost;
-
+        purchaseSound.play();
         turretLevel++;
 
         redraw();
@@ -1198,7 +1285,7 @@ function mousePressed() {
       honeyMultiplierLevel < maxHoneyMultiplierLevel
     ) {
       honey -= honeyMultiplierCost;
-
+      purchaseSound.play();
       honeyMultiplierLevel++;
 
       honeyMultiplier += 0.25;
@@ -1206,6 +1293,8 @@ function mousePressed() {
       redraw();
 
       honeyMultiplierCost += 8000;
+    } else {
+      declineSound.play();
     }
 
     return;
@@ -1221,6 +1310,7 @@ function mousePressed() {
     ) {
       if (!bear.leaving) {
         bear.leaving = true;
+        bearGrowlSound.play();
         bear.facing *= -1;
         score += 100;
         honey += 100 * honeyMultiplier;
@@ -1238,6 +1328,7 @@ function mousePressed() {
     ) {
       if (!bird.leaving) {
         bird.leaving = true;
+        birdSquawkSound.play();
         score += 150;
         honey += 150 * honeyMultiplier;
 
@@ -1407,6 +1498,11 @@ function keyPressed() {
   if (!gameStarted && key === " " && !gameOver) {
     gameStarted = true;
     introTimer = 300;
+    backgroundMusic.setVolume(0.25);
+    backgroundMusic.loop();
+
+    beesBuzzingSound.setVolume(2.5);
+    beesBuzzingSound.loop();
   }
 
   // Restart after game over
@@ -1476,6 +1572,7 @@ function drawTurret() {
 
         angle: turretAngle,
       });
+      turretShotSound.play();
 
       lastTurretShot = millis();
     }
