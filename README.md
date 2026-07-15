@@ -1,5 +1,17 @@
 # Group 5 A2 — Defend the Hive
 
+## Description
+
+Defend the Hive is a wave based defense game where players protect a beehive from incoming bears and birds. Players earn Honey by defeating enemies and use it to purchase permanent upgrades in the shop. As rounds progress, enemies become more difficult and players must balance resource management, upgrades, and quick reactions to keep the hive alive. The game focuses on progression, strategic decision making, and defending the hive against increasingly challenging enemy attacks.
+
+## Design Rationale
+
+The game uses clear affordances to help players understand how to interact with the interface. Buttons such as SHOP, Pause, and Start are visually distinct and placed in locations where players expect interactive elements to appear. Enemy movement toward the hive also communicates the player's objective without requiring extensive instructions. Players quickly learn that clicking enemies protects the hive and earns rewards.
+
+GameFlow principles are supported through clear goals, immediate feedback, and gradual progression. Players receive visual and audio feedback when damaging enemies, earning Honey, purchasing upgrades, and advancing through rounds. The increasing challenge keeps players engaged while maintaining a balance between difficulty and player skill.
+
+The game was designed around ADHD by encouraging focus through short gameplay loops, immediate rewards, and continuous interaction. Players receive constant feedback through sounds, visual effects, Honey rewards, and upgrade purchases, helping maintain attention and engagement. The upgrade system provides frequent goals and a sense of progression, while the simple click based controls reduce cognitive load and allow players to focus on the core gameplay experience. Design decisions such as clear objectives, quick feedback, and accessible controls were intentionally chosen to create an experience that is engaging for players with ADHD.
+
 ## Setup and Interaction Instructions
 
 To run the sketch locally, open `index.html` in Google Chrome using Live Server.
@@ -18,6 +30,22 @@ Protect your hive from bears and birds before they damage it. Earn Honey by clic
 
 - **Windows:** Press `F12` or `Ctrl + Shift + J`, then click the **Console** tab.
 - **Mac:** Press `Cmd + Option + J`.
+
+## Iteration Notes
+
+### Post Playtest Changes
+
+1. Improved UI readability by adjusting text visibility and adding outlines to important interface elements such as the Honey counter.
+
+2. Refined the visual design by updating fonts and improving the overall bee themed presentation.
+
+3. Adjusted difficulty balancing to create a smoother progression between rounds and improve the overall gameplay experience.
+
+### Post Showcase Planned Improvements
+
+1. Reduce the length of Level 1 and increase the pace of the early game. Multiple playtesters noted that the opening section felt too slow before the challenge increased.
+
+2. Introduce a new gameplay mechanic, such as a boss fight or unique enemy type, to provide more variety instead of only increasing enemy speed and difficulty.
 
 ## Assets
 
